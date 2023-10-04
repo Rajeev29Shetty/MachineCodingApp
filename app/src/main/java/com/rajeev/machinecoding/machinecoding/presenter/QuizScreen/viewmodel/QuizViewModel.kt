@@ -12,8 +12,11 @@ import com.rajeev.machinecoding.machinecoding.data.model.QuizItem
 import com.rajeev.machinecoding.machinecoding.data.repository.QuizRepository
 import com.rajeev.machinecoding.machinecoding.presenter.QuizScreen.QuizEvent
 import com.rajeev.machinecoding.machinecoding.presenter.QuizScreen.QuizState
+import com.rajeev.machinecoding.machinecoding.presenter.QuizScreen.QuizUIEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,8 +28,10 @@ class QuizViewModel @Inject constructor(
     var _state = mutableStateOf(QuizState())
     val state : MutableState<QuizState> = _state
 
+    private val _eventFlow = MutableSharedFlow<QuizUIEvent>()
+    val eventFlow = _eventFlow.asSharedFlow()
+
     var quizList = listOf<QuizItem>()
-    var itemSelectedIndex = -1
 
     init {
         getQuizList()
@@ -37,7 +42,6 @@ class QuizViewModel @Inject constructor(
             quizRepository.getQuizList().collect { result ->
                 when(result){
                     is Resource.Success -> {
-                        Log.d("Rajeev Checking", "${result.data}")
                        result.data?.let {
                            quizList = it
                        }
@@ -67,40 +71,81 @@ class QuizViewModel @Inject constructor(
     }
 
     fun handleEvent(event : QuizEvent) {
-
         when(event) {
-
             is QuizEvent.clearAll -> {
                 _state.value = _state.value.copy(
-                    selectedResult = "",
-                    showClear = false
+                    selectedResult1 = mutableListOf(),
+                    showClear = false,
+                    itemSelectedToChange = -1,
+                    showReset = false,
                 )
             }
             is QuizEvent.removeChar -> {
-                //TODO
+                val resChar : MutableList<Char> = _state.value.selectedResult1.toMutableList()
+                resChar.set(_state.value.itemSelectedToChange,Character.MIN_VALUE)
+
+                _state.value = _state.value.copy(
+                    selectedResult1 = resChar,
+                    showReset = false,
+                    itemSelectedToChange = -1
+                )
             }
             is QuizEvent.onItemSelected -> {
-                itemSelectedIndex = event.charIndex
-                _state.value = _state.value.copy(
-                    showReset = !_state.value.showReset
-                )
+                if(_state.value.showNextQuestion == false) {
+                    _state.value = _state.value.copy(
+                        showReset = if (_state.value.itemSelectedToChange == event.charIndex || _state.value.selectedResult1.size < event.charIndex + 1) false else true,
+                        itemSelectedToChange = if (_state.value.itemSelectedToChange == event.charIndex || _state.value.selectedResult1.size < event.charIndex + 1) -1 else event.charIndex
+                    )
+                }
             }
             is QuizEvent.onCharSelected -> {
+                val resChar : MutableList<Char> = _state.value.selectedResult1.toMutableList()
+                var showNextQuestion = false
+                val index = _state.value.selectedResult1.indexOfFirst { c -> c == Character.MIN_VALUE}
+                if(index == -1) {
+                    resChar.add(_state.value.selectedResult1.size, event.char)
+                } else {
+                    resChar.set(index, event.char)
+                }
+
                 val resultMessage =
-                    if(_state.value.selectedResult.length+1 >= _state.value.name?.length?:0){
-                        if(_state.value.selectedResult + event.char == _state.value.name)
+                    if(resChar.size == (_state.value.name?.length ?: 0)) {
+                        if(resChar.toCharArray().concatToString() == _state.value.name) {
+                            showNextQuestion = true
                             "Result is correct"
-                        else
-                            "Result is wrong"
-                    } else ""
-                _state.value = _state.value.copy(
-                    selectedResult = _state.value.selectedResult + event.char,
-                    resultMessage = resultMessage,
-                    showClear = true
-                )
+                        } else
+                            "Result is wrong. Try Again"
+                    }
+                    else if(resChar.size > (_state.value.name?.length ?: 0))
+                        "Result is wrong. Try Again"
+                    else ""
+
+                if(_state.value.showNextQuestion == false) {
+                    _state.value = _state.value.copy(
+                        selectedResult1 = resChar,
+                        resultMessage = resultMessage,
+                        showClear = if(showNextQuestion) false else true,
+                        showNextQuestion = showNextQuestion
+                    )
+                }
             }
             is QuizEvent.nextQuestion -> {
-                //TODO
+                if(quizList.size > _state.value.quizNo + 1) {
+                    _state.value = QuizState(
+                        quizNo = _state.value.quizNo + 1,
+                        imageUrl = quizList.get(_state.value.quizNo + 1).imgUrl,
+                        name = quizList.get(_state.value.quizNo + 1).name,
+                        availableCharacters = quizList.get(_state.value.quizNo + 1).name.getRandomCharsIncludingString()
+                    )
+                } else {
+                    viewModelScope.launch {
+                        _eventFlow.emit(
+                            QuizUIEvent.ShowSnackbar(
+                                message = "All Questions done. Excellent!"
+                            )
+                        )
+                    }
+                }
             }
         }
     }
