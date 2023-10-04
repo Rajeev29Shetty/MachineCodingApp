@@ -26,6 +26,7 @@ class QuizViewModel @Inject constructor(
     val state : MutableState<QuizState> = _state
 
     var quizList = listOf<QuizItem>()
+    var itemSelectedIndex = -1
 
     init {
         getQuizList()
@@ -70,13 +71,19 @@ class QuizViewModel @Inject constructor(
         when(event) {
 
             is QuizEvent.clearAll -> {
-
+                _state.value = _state.value.copy(
+                    selectedResult = "",
+                    showClear = false
+                )
             }
             is QuizEvent.removeChar -> {
-
+                //TODO
             }
             is QuizEvent.onItemSelected -> {
-
+                itemSelectedIndex = event.charIndex
+                _state.value = _state.value.copy(
+                    showReset = !_state.value.showReset
+                )
             }
             is QuizEvent.onCharSelected -> {
                 val resultMessage =
@@ -88,11 +95,12 @@ class QuizViewModel @Inject constructor(
                     } else ""
                 _state.value = _state.value.copy(
                     selectedResult = _state.value.selectedResult + event.char,
-                    resultMessage = resultMessage
+                    resultMessage = resultMessage,
+                    showClear = true
                 )
             }
             is QuizEvent.nextQuestion -> {
-
+                //TODO
             }
         }
     }

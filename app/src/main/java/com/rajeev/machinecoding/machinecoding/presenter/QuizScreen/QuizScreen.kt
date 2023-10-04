@@ -8,12 +8,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -21,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -71,6 +77,11 @@ fun QuizScreen(
                         char = resultChar,
                         modifier = Modifier.size(40.dp)
                     ) {
+                        quizViewModel.handleEvent(
+                            QuizEvent.onItemSelected(
+                                index
+                            )
+                        )
                     }
                 }
             }
@@ -110,6 +121,56 @@ fun QuizScreen(
                 )
             }
 
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+            ) {
+                if (state.showReset) {
+                    Button(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .weight(0.5f),
+                        onClick = {
+                            quizViewModel.handleEvent(
+                                event = QuizEvent.removeChar
+                            )
+                        }
+                    ) {
+                        Text(
+                            text = "Reset Item",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = androidx.compose.ui.Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                }
+
+                if (state.showClear) {
+                    Button(
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .weight(0.5f),
+                        onClick = {
+                            quizViewModel.handleEvent(
+                                event = QuizEvent.clearAll
+                            )
+                        }
+                    ) {
+                        Text(
+                            text = "Clear All",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
 
         if (state.errorMessage.isNotBlank()) {

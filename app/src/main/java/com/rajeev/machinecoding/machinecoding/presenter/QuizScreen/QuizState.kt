@@ -9,4 +9,6 @@ data class QuizState(
     val errorMessage: String = "",
     val isLoading: Boolean = false,
     val resultMessage: String = "",
+    val showClear: Boolean = false,
+    val showReset: Boolean = false,
 )
