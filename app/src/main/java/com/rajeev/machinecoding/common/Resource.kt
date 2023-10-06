@@ -1,4 +1,4 @@
-package com.rajeev.machinecoding.machinecoding.common
+package com.rajeev.machinecoding.common
 
 sealed class Resource<T>(val data: T ?= null, val message: String ?= null) {
     class Success<T>(data: T): Resource<T>(data)

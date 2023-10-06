@@ -2,14 +2,12 @@ package com.rajeev.machinecoding.machinecoding.data.repository
 
 import android.content.Context
 import com.google.gson.Gson
-import com.rajeev.machinecoding.machinecoding.common.Resource
+import com.rajeev.machinecoding.common.Resource
 import com.rajeev.machinecoding.machinecoding.data.model.Quiz
 import com.rajeev.machinecoding.machinecoding.data.model.QuizItem
 import com.rajeev.machinecoding.machinecoding.util.ReadJsonFromAsset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 

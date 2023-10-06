@@ -1,4 +1,4 @@
-package com.rajeev.machinecoding.machinecoding.common
+package com.rajeev.machinecoding.common
 
 import android.util.Log
 import java.util.Random

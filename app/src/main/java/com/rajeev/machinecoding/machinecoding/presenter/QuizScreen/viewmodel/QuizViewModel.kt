@@ -6,8 +6,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.rajeev.machinecoding.machinecoding.common.Resource
-import com.rajeev.machinecoding.machinecoding.common.getRandomCharsIncludingString
+import com.rajeev.machinecoding.common.Resource
+import com.rajeev.machinecoding.common.getRandomCharsIncludingString
 import com.rajeev.machinecoding.machinecoding.data.model.QuizItem
 import com.rajeev.machinecoding.machinecoding.data.repository.QuizRepository
 import com.rajeev.machinecoding.machinecoding.presenter.QuizScreen.QuizEvent
